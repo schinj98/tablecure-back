@@ -1,13 +1,15 @@
 # Build stage
 FROM eclipse-temurin:17-jdk-jammy AS build
 WORKDIR /app
+
+# Change this number to bust cache anytime
+ARG CACHE_BUST=2
+
 COPY pom.xml .
 COPY mvnw .
 COPY .mvn .mvn
 RUN chmod +x mvnw
-# Download dependencies first (cached separately)
 RUN ./mvnw dependency:go-offline -q
-# Copy source AFTER - any source change busts cache here
 COPY src src
 RUN ./mvnw clean package -DskipTests
 
