@@ -1,0 +1,107 @@
+package com.example.tablecure.product.service;
+
+import com.example.tablecure.entity.*;
+import com.example.tablecure.product.dto.ProductDetailResponse;
+import com.example.tablecure.product.dto.ProductResponse;
+import com.example.tablecure.product.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import com.example.tablecure.entity.ProductFeature;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class ProductService {
+
+    private final ProductRepository productRepository;
+
+    public ProductDetailResponse getProductDetails(Long id) {
+
+        Product p = productRepository.findById(id).orElseThrow();
+
+        List<String> features = p.getFeatures()
+                .stream().map(ProductFeature::getFeature).toList();
+
+        Map<String, String> specs = p.getSpecifications()
+                .stream()
+                .collect(Collectors.toMap(
+                        ProductSpecification::getSpecKey,
+                        ProductSpecification::getSpecValue
+                ));
+
+        List<String> images = p.getImages()
+                .stream().map(ProductImage::getUrl).toList();
+
+        double avgRating = p.getReviews()
+                .stream()
+                .mapToInt(Review::getRating)
+                .average().orElse(0);
+
+        return ProductDetailResponse.builder()
+                .id(p.getId())
+                .name(p.getName())
+                .description(p.getDescription())
+                .price(p.getPrice())
+                .imageUrl(p.getImageUrl())
+                .features(features)
+                .specifications(specs)
+                .images(images)
+                .avgRating(avgRating)
+                .totalReviews(p.getReviews().size())
+                .build();
+    }
+
+    public List<ProductResponse> getAllProducts() {
+
+        return productRepository.findAll()
+                .stream()
+                .map(p -> ProductResponse.builder()
+                        .id(p.getId())
+                        .name(p.getName())
+                        .description(p.getDescription())
+                        .price(p.getPrice())
+                        .stock(p.getStock())
+                        .imageUrl(p.getImageUrl())
+                        .build()
+                )
+                .toList();
+    }
+
+    public ProductResponse getProductById(Long id) {
+
+        Product p = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        return ProductResponse.builder()
+                .id(p.getId())
+                .name(p.getName())
+                .description(p.getDescription())
+                .price(p.getPrice())
+                .stock(p.getStock())
+                .imageUrl(p.getImageUrl())
+                .build();
+    }
+
+    public Product addProduct(Product product) {
+        return productRepository.save(product);
+    }
+
+    public Product updateProduct(Long id, Product updatedProduct) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        product.setName(updatedProduct.getName());
+        product.setDescription(updatedProduct.getDescription());
+        product.setPrice(updatedProduct.getPrice());
+        product.setStock(updatedProduct.getStock());
+
+        return productRepository.save(product);
+    }
+
+    public void deleteProduct(Long id) {
+        productRepository.deleteById(id);
+    }
+}
