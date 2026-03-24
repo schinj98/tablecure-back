@@ -1,0 +1,16 @@
+spring.application.name=tablecure
+
+#mysql details
+spring.datasource.url=jdbc:mysql://localhost:3306/tablecure_db
+spring.datasource.username=user
+spring.datasource.password=xxxxxxxx
+
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+
+#razorpay details
+razorpay.key=rzp_test_xxxxx
+razorpay.secret=xxxxxxxx
