@@ -27,7 +27,7 @@ public class AdminUserController {
                         u.getName(),
                         u.getEmail(),
                         u.getRole(),
-                        orderRepository.findByUser(u).size()
+                        orderRepository.countByUser(u)
                 ))
                 .collect(Collectors.toList());
     }
@@ -39,7 +39,7 @@ public class AdminUserController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return new UserSummary(
                 u.getId(), u.getName(), u.getEmail(), u.getRole(),
-                orderRepository.findByUser(u).size()
+                orderRepository.countByUser(u)
         );
     }
 

@@ -33,4 +33,10 @@ public class OrderController {
                 .map(OrderMapper::toResponse)
                 .toList();
     }
+
+    @GetMapping("/has-purchased/{productId}")
+    public boolean hasPurchased(@PathVariable Long productId, Principal principal) {
+
+        return orderService.hasUserPurchasedProduct(principal.getName(), productId);
+    }
 }

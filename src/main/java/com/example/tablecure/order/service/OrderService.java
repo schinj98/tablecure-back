@@ -48,6 +48,14 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    public boolean hasUserPurchasedProduct(String email, Long productId) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return orderRepository.existsByUserAndOrderItems_Product_Id(user, productId);
+    }
+
     public Order save(Order order) {
         return orderRepository.save(order);
     }

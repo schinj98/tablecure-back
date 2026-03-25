@@ -21,24 +21,18 @@ public class AdminDashboardService {
 
     public AdminDashboardResponse getStats() {
 
-        List<Order> allOrders = orderRepository.findAll();
+        long totalOrders = orderRepository.count();
 
-        long totalOrders   = allOrders.size();
+        long paidOrders = orderRepository.countByPaymentStatus("PAID");
+
+        double totalRevenue = orderRepository.sumPaidRevenue();
+
         long totalUsers    = userRepository.count();
         long totalProducts = productRepository.count();
 
-        long paidOrders = allOrders.stream()
-                .filter(o -> "PAID".equals(o.getPaymentStatus()))
-                .count();
 
         long pendingOrders = totalOrders - paidOrders;
 
-        // Revenue = sum of confirmed amounts on PAID orders only
-        double totalRevenue = allOrders.stream()
-                .filter(o -> "PAID".equals(o.getPaymentStatus()))
-                .filter(o -> o.getAmount() != null)
-                .mapToDouble(Order::getAmount)
-                .sum();
 
         return AdminDashboardResponse.builder()
                 .totalOrders(totalOrders)

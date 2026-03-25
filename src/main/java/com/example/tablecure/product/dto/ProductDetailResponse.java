@@ -1,5 +1,6 @@
 package com.example.tablecure.product.dto;
 
+import com.example.tablecure.review.dto.ReviewResponse;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,4 +26,5 @@ public class ProductDetailResponse {
 
     private double avgRating;
     private int totalReviews;
+    private List<ReviewResponse> reviews;
 }

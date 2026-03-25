@@ -4,6 +4,7 @@ import com.example.tablecure.entity.*;
 import com.example.tablecure.product.dto.ProductDetailResponse;
 import com.example.tablecure.product.dto.ProductResponse;
 import com.example.tablecure.product.repository.ProductRepository;
+import com.example.tablecure.review.dto.ReviewResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.example.tablecure.entity.ProductFeature;
@@ -40,6 +41,18 @@ public class ProductService {
                 .mapToInt(Review::getRating)
                 .average().orElse(0);
 
+        List<ReviewResponse> reviews = p.getReviews()
+                .stream()
+                .map(r -> ReviewResponse.builder()
+                        .id(r.getId())
+                        .userName(r.getUser() != null ? r.getUser().getName() : "Anonymous")
+                        .rating(r.getRating())
+                        .comment(r.getComment())
+                        .build()
+                )
+                .toList();
+
+
         return ProductDetailResponse.builder()
                 .id(p.getId())
                 .name(p.getName())
@@ -50,6 +63,7 @@ public class ProductService {
                 .specifications(specs)
                 .images(images)
                 .avgRating(avgRating)
+                .reviews(reviews)
                 .totalReviews(p.getReviews().size())
                 .build();
     }

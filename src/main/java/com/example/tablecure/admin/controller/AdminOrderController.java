@@ -8,6 +8,8 @@ import com.example.tablecure.auth.repository.UserRepository;
 
 import lombok.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import com.razorpay.RazorpayClient;
@@ -32,9 +34,9 @@ public class AdminOrderController {
 
     // ── GET ALL ORDERS ──────────────────────────────────────────
     @GetMapping
-    public List<OrderSummary> getAllOrders() {
-        return orderRepository.findAll().stream()
-                .map(this::toSummary).collect(Collectors.toList());
+    public Page<OrderSummary> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable)
+                .map(this::toSummary);
     }
 
     // ── GET SINGLE ORDER ────────────────────────────────────────
