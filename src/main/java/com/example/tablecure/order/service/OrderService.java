@@ -8,6 +8,7 @@ import com.example.tablecure.auth.repository.UserRepository;
 import com.example.tablecure.address.repository.AddressRepository; // ← import this
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +22,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final AddressRepository addressRepository; // ← add this
 
+    @Transactional
     public Order createOrder(String email, List<OrderItem> items) {
 
         User user = userRepository.findByEmail(email)

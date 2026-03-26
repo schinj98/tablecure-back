@@ -2,6 +2,7 @@ package com.example.tablecure.payment.controller;
 
 import com.example.tablecure.entity.Order;
 import com.example.tablecure.entity.OrderItem;
+import com.example.tablecure.order.OrderStatus;
 import com.example.tablecure.order.repository.OrderRepository;
 import com.example.tablecure.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -56,9 +57,10 @@ public class PaymentController {
             // Save paymentId — needed later for Razorpay refunds
             Order order = orderRepository.findByRazorpayOrderId(orderId)
                     .orElseThrow(() -> new RuntimeException("Order not found"));
-            order.setRazorpayPaymentId(paymentId);  // ← save this
-            orderService.markOrderPaid(orderId);
-            orderService.save(order);
+            order.setRazorpayPaymentId(paymentId);
+            order.setPaymentStatus("PAID");
+            order.setStatus(OrderStatus.CONFIRMED);
+            orderRepository.save(order);
             return "Payment Success";
         }
 

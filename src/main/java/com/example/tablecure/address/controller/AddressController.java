@@ -61,8 +61,12 @@ public class AddressController {
 
     // ✅ DELETE
     @DeleteMapping("/{id}")
-    public String deleteAddress(@PathVariable Long id) {
-
+    public String deleteAddress(@PathVariable Long id, Principal principal) {
+        Address address = addressRepository.findById(id).orElseThrow();
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow();
+        if (!address.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Not authorized");
+        }
         addressRepository.deleteById(id);
         return "Address deleted";
     }
