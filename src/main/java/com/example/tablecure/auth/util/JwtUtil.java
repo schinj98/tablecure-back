@@ -16,7 +16,7 @@ public class JwtUtil {
     private String secretString;
 
     private Key getKey() {
-        return Keys.hmacShaKeyFor(secretString.getBytes());
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretString));
     }
 
     public String generateToken(String username, String role) {

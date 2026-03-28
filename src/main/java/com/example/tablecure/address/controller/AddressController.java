@@ -46,8 +46,12 @@ public class AddressController {
                                  @RequestBody Address updated,
                                  Principal principal) {
 
-        Address address = addressRepository.findById(id)
-                .orElseThrow();
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow();
+        Address address = addressRepository.findById(id).orElseThrow();
+
+        if (!address.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Not authorized");
+        }
 
         address.setFullName(updated.getFullName());
         address.setPhone(updated.getPhone());

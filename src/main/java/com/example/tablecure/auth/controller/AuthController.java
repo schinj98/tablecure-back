@@ -8,6 +8,8 @@ import com.example.tablecure.auth.service.AuthService;
 import com.example.tablecure.auth.util.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +35,7 @@ public class AuthController {
 
         return new AuthResponse(token);
     }
+
     @GetMapping("/me")
     public User getCurrentUser(Authentication auth) {
         return userRepository.findByEmail(auth.getName()).orElseThrow();
@@ -40,18 +43,13 @@ public class AuthController {
 
     // ✅ LOGIN
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody LoginRequest request) {
-
-        User user = authService.login(
-                request.getEmail(),
-                request.getPassword()
-        );
-
-        String token = jwtUtil.generateToken(
-                user.getEmail(),
-                user.getRole()
-        );
-
-        return new AuthResponse(token);
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        try {
+            User user = authService.login(request.getEmail(), request.getPassword());
+            String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+            return ResponseEntity.ok(new AuthResponse(token));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+        }
     }
 }

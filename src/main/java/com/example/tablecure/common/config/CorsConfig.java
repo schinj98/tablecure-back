@@ -19,7 +19,7 @@ public class CorsConfig {
                                 "https://tablecure.vercel.app"
                         )
                         .allowedMethods("GET", "PATCH", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
+                        .allowedHeaders("Content-Type", "Authorization")
                         .allowCredentials(true);
             }
         };

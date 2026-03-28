@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Hex;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 @Service
 public class PaymentService {
@@ -40,6 +42,9 @@ public class PaymentService {
         byte[] rawHmac = mac.doFinal(data.getBytes());
         String generatedSignature = Hex.encodeHexString(rawHmac);
 
-        return generatedSignature.equals(signature);
+        return MessageDigest.isEqual(
+                generatedSignature.getBytes(StandardCharsets.UTF_8),
+                signature.getBytes(StandardCharsets.UTF_8)
+        );
     }
 }
