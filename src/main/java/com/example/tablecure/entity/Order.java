@@ -36,6 +36,12 @@ public class Order {
 
     private Double amount;
 
+    private String couponCode;
+
+    private Double discountAmount;
+
+    private Double finalAmount;
+
     @ManyToOne
     @JoinColumn(name = "address_id")
     private Address address;

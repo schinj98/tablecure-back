@@ -29,6 +29,9 @@ public class OrderMapper {
                 .collect(Collectors.toList());
 
         response.setItems(items);
+        response.setCouponCode(order.getCouponCode());
+        response.setDiscountAmount(order.getDiscountAmount());
+        response.setFinalAmount(order.getFinalAmount());
 
         return response;
     }

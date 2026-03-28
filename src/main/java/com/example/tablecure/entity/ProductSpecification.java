@@ -10,7 +10,7 @@ import lombok.Setter;
 public class ProductSpecification {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String specKey;

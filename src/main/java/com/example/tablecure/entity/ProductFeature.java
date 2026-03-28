@@ -10,7 +10,7 @@ import lombok.Setter;
 public class ProductFeature {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String feature;

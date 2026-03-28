@@ -1,9 +1,9 @@
 package com.example.tablecure.payment.controller;
 
 import com.example.tablecure.entity.Order;
-import com.example.tablecure.entity.OrderItem;
 import com.example.tablecure.order.OrderStatus;
 import com.example.tablecure.order.repository.OrderRepository;
+import com.example.tablecure.payment.dto.CreateOrderRequest;
 import com.example.tablecure.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import com.example.tablecure.order.service.OrderService;
 
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/payment")
@@ -23,17 +22,19 @@ public class PaymentController {
     private final OrderRepository orderRepository;
 
     @PostMapping("/create-order")
-    public String createOrder(@RequestBody List<OrderItem> items,
+    public String createOrder(@RequestBody CreateOrderRequest request,
                               Principal principal) throws Exception {
 
-        Order order = orderService.createOrder(principal.getName(), items);
+        Order order = orderService.createOrder(
+                principal.getName(),
+                request.getItems(),
+                request.getCouponCode()
+        );
 
-        int amount = order.getOrderItems()
-                .stream()
-                .mapToInt(i -> i.getPrice().intValue() * i.getQuantity())
-                .sum();
+        // Use finalAmount (after coupon) as what Razorpay should charge
+        int amountInRupees = (int) Math.round(order.getFinalAmount());
 
-        String razorpayOrder = paymentService.createOrder(amount);
+        String razorpayOrder = paymentService.createOrder(amountInRupees);
         JSONObject json        = new JSONObject(razorpayOrder);
         String razorpayId      = json.getString("id");
         double confirmedAmount = json.getInt("amount") / 100.0;

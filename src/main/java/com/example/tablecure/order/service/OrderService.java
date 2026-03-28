@@ -1,11 +1,12 @@
 package com.example.tablecure.order.service;
 
+import com.example.tablecure.coupon.service.CouponService;
 import com.example.tablecure.entity.*;
 import com.example.tablecure.order.OrderStatus;
 import com.example.tablecure.order.repository.OrderRepository;
 import com.example.tablecure.product.repository.ProductRepository;
 import com.example.tablecure.auth.repository.UserRepository;
-import com.example.tablecure.address.repository.AddressRepository; // ← import this
+import com.example.tablecure.address.repository.AddressRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +21,11 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
-    private final AddressRepository addressRepository; // ← add this
+    private final AddressRepository addressRepository;
+    private final CouponService couponService;
 
     @Transactional
-    public Order createOrder(String email, List<OrderItem> items) {
+    public Order createOrder(String email, List<OrderItem> items, String couponCode) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -47,6 +49,21 @@ public class OrderService {
         }
 
         order.setOrderItems(items);
+
+        double subtotal = items.stream()
+                .mapToDouble(i -> i.getPrice().doubleValue() * i.getQuantity())
+                .sum();
+
+        double discountAmount = 0;
+        if (couponCode != null && !couponCode.isBlank()) {
+            // applyAndRecord is @Transactional — runs within this transaction,
+            // so a rollback here also undoes the coupon usage records.
+            discountAmount = couponService.applyAndRecord(couponCode, subtotal, user);
+            order.setCouponCode(couponCode.trim().toUpperCase());
+            order.setDiscountAmount(discountAmount);
+        }
+        order.setFinalAmount(subtotal - discountAmount);
+
         return orderRepository.save(order);
     }
 

@@ -21,7 +21,7 @@ public class OrderController {
     @PostMapping
     public OrderResponse createOrder(@RequestBody List<OrderItem> items,
                                      Principal principal) {
-        Order order = orderService.createOrder(principal.getName(), items);
+        Order order = orderService.createOrder(principal.getName(), items, null);
         return OrderMapper.toResponse(order);
     }
 
