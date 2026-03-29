@@ -6,7 +6,10 @@ import com.example.tablecure.product.dto.ProductResponse;
 import com.example.tablecure.product.repository.ProductRepository;
 import com.example.tablecure.review.dto.ReviewResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import com.example.tablecure.entity.ProductFeature;
 
 import java.util.List;
@@ -19,6 +22,8 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
+    @Cacheable(value = "product-details", key = "#id")
+    @Transactional(readOnly = true)
     public ProductDetailResponse getProductDetails(Long id) {
 
         Product p = productRepository.findById(id).orElseThrow();
@@ -103,6 +108,7 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    @CacheEvict(value = "product-details", key = "#id")
     public Product updateProduct(Long id, Product updatedProduct) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -115,6 +121,7 @@ public class ProductService {
         return productRepository.save(product);
     }
 
+    @CacheEvict(value = "product-details", key = "#id")
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
     }
