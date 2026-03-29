@@ -22,7 +22,9 @@ public class CorsConfig {
                 registry.addMapping("/**")
                         .allowedOrigins(
                                 "http://localhost:3000",
-                                "https://tablecure.vercel.app"
+                                "https://tablecure.vercel.app",
+                                "https://tablecure.com",
+                                "https://www.tablecure.com"
                         )
                         .allowedMethods("GET", "PATCH", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("Content-Type", "Authorization")
