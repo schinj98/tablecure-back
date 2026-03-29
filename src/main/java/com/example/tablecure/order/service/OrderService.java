@@ -1,6 +1,7 @@
 package com.example.tablecure.order.service;
 
 import com.example.tablecure.coupon.service.CouponService;
+import com.example.tablecure.email.EmailService;
 import com.example.tablecure.entity.*;
 import com.example.tablecure.order.OrderStatus;
 import com.example.tablecure.order.repository.OrderRepository;
@@ -23,6 +24,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final AddressRepository addressRepository;
     private final CouponService couponService;
+    private final EmailService emailService;
 
     @Transactional
     public Order createOrder(String email, List<OrderItem> items, String couponCode) {
@@ -79,14 +81,25 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    @Transactional
     public void markOrderPaid(String razorpayOrderId) {
         Order order = orderRepository.findByRazorpayOrderId(razorpayOrderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         order.setPaymentStatus("PAID");
         order.setStatus(OrderStatus.CONFIRMED);
-
         orderRepository.save(order);
+
+        // Eagerly initialize lazy associations within this transaction
+        // so the async email thread can access them safely.
+        order.getUser().getEmail();
+        order.getUser().getName();
+        if (order.getAddress() != null) {
+            order.getAddress().getStreet();
+        }
+        order.getOrderItems().forEach(item -> item.getProduct().getName());
+
+        emailService.sendOrderConfirmationEmail(order);
     }
 
     public List<Order> getUserOrders(String email) {
