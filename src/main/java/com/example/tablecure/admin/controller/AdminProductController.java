@@ -5,6 +5,7 @@ import com.example.tablecure.entity.ProductFeature;
 import com.example.tablecure.entity.ProductImage;
 import com.example.tablecure.entity.ProductSpecification;
 import com.example.tablecure.product.dto.ProductDetailResponse;
+import com.example.tablecure.cloudflare.CloudflareCacheService;
 import com.example.tablecure.product.repository.ProductRepository;
 import lombok.*;
 import com.example.tablecure.product.service.ProductService;
@@ -23,6 +24,7 @@ public class AdminProductController {
 
     private final ProductRepository productRepository;
     private final ProductService productService;
+    private final CloudflareCacheService cloudflareCache;
 
     // ── GET ALL PRODUCTS ────────────────────────────────────────
     @GetMapping
@@ -63,7 +65,9 @@ public class AdminProductController {
             }
         }
 
-        return productRepository.save(p);
+        Product saved = productRepository.save(p);
+        cloudflareCache.purgeProduct(id);
+        return saved;
     }
 
     // ── REPLACE ALL SPECIFICATIONS (bulk) ──────────────────────
@@ -86,7 +90,9 @@ public class AdminProductController {
             }
         }
 
-        return productRepository.save(p);
+        Product saved = productRepository.save(p);
+        cloudflareCache.purgeProduct(id);
+        return saved;
     }
 
     // ── REPLACE ALL IMAGES (bulk) ───────────────────────────────
@@ -108,7 +114,9 @@ public class AdminProductController {
             }
         }
 
-        return productRepository.save(p);
+        Product saved = productRepository.save(p);
+        cloudflareCache.purgeProduct(id);
+        return saved;
     }
 
     // ── CREATE PRODUCT ──────────────────────────────────────────
@@ -126,7 +134,9 @@ public class AdminProductController {
         p.setFeatures(new ArrayList<>());
         p.setSpecifications(new ArrayList<>());
         p.setImages(new ArrayList<>());
-        return productRepository.save(p);
+        Product saved = productRepository.save(p);
+        cloudflareCache.purgeProduct(saved.getId());
+        return saved;
     }
 
     // ── UPDATE FULL PRODUCT ─────────────────────────────────────
@@ -145,7 +155,9 @@ public class AdminProductController {
         if (req.getImageUrl()    != null) p.setImageUrl(req.getImageUrl());
         if (req.getVideoUrl()    != null) p.setVideoUrl(req.getVideoUrl());
 
-        return productRepository.save(p);
+        Product saved = productRepository.save(p);
+        cloudflareCache.purgeProduct(id);
+        return saved;
     }
 
     // ── UPDATE PRICE ONLY ───────────────────────────────────────
@@ -156,7 +168,9 @@ public class AdminProductController {
         Product p = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         p.setPrice(price);
-        return productRepository.save(p);
+        Product saved1 = productRepository.save(p);
+        cloudflareCache.purgeProduct(id);
+        return saved1;
     }
 
     // ── UPDATE SKU ONLY ─────────────────────────────────────────
@@ -167,7 +181,9 @@ public class AdminProductController {
         Product p = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         p.setSku(sku);
-        return productRepository.save(p);
+        Product saved2 = productRepository.save(p);
+        cloudflareCache.purgeProduct(id);
+        return saved2;
     }
 
     // ── UPDATE STOCK ONLY ───────────────────────────────────────
@@ -178,7 +194,9 @@ public class AdminProductController {
         Product p = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         p.setStock(stock);
-        return productRepository.save(p);
+        Product saved3 = productRepository.save(p);
+        cloudflareCache.purgeProduct(id);
+        return saved3;
     }
 
     // ── UPDATE IMAGE URL ────────────────────────────────────────
@@ -189,7 +207,9 @@ public class AdminProductController {
         Product p = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         p.setImageUrl(imageUrl);
-        return productRepository.save(p);
+        Product saved4 = productRepository.save(p);
+        cloudflareCache.purgeProduct(id);
+        return saved4;
     }
 
     // ── UPDATE VIDEO URL ────────────────────────────────────────
@@ -200,13 +220,16 @@ public class AdminProductController {
         Product p = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
         p.setVideoUrl(videoUrl);
-        return productRepository.save(p);
+        Product saved5 = productRepository.save(p);
+        cloudflareCache.purgeProduct(id);
+        return saved5;
     }
 
     // ── DELETE PRODUCT ──────────────────────────────────────────
     @CacheEvict(value = "product-details", key = "#id")
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id) {
+        cloudflareCache.purgeProduct(id);
         productRepository.deleteById(id);
         return "Product deleted";
     }
