@@ -4,6 +4,7 @@ import com.example.tablecure.entity.Product;
 import com.example.tablecure.entity.ProductFeature;
 import com.example.tablecure.entity.ProductImage;
 import com.example.tablecure.entity.ProductSpecification;
+import com.example.tablecure.order.repository.OrderItemRepository;
 import com.example.tablecure.product.dto.ProductDetailResponse;
 import com.example.tablecure.cloudflare.CloudflareCacheService;
 import com.example.tablecure.product.repository.ProductImageRepository;
@@ -30,6 +31,7 @@ public class AdminProductController {
     private final ProductService productService;
     private final CloudflareCacheService cloudflareCache;
     private final StorageService storageService;
+    private final OrderItemRepository orderItemRepository;
 
     // ── GET ALL PRODUCTS ────────────────────────────────────────
     @GetMapping
@@ -256,10 +258,12 @@ public class AdminProductController {
 
     // ── DELETE PRODUCT ──────────────────────────────────────────
     @CacheEvict(value = "product-details", key = "#id")
+    @Transactional
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id) {
-        cloudflareCache.purgeProduct(id);
+        orderItemRepository.detachProduct(id);
         productRepository.deleteById(id);
+        cloudflareCache.purgeProduct(id);
         return "Product deleted";
     }
 
