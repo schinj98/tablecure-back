@@ -22,7 +22,8 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<ProductResponse>> getProducts() {
         return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePublic())
+                .header("Cloudflare-CDN-Cache-Control", "public, max-age=600")
+                .cacheControl(CacheControl.noStore())
                 .body(productService.getAllProducts());
     }
 
@@ -30,14 +31,16 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePublic())
+                .header("Cloudflare-CDN-Cache-Control", "public, max-age=600")
+                .cacheControl(CacheControl.noStore())
                 .body(productService.getProductById(id));
     }
 
     @GetMapping("/{id}/details")
     public ResponseEntity<ProductDetailResponse> getDetails(@PathVariable Long id) {
         return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePublic())
+                .header("Cloudflare-CDN-Cache-Control", "public, max-age=600")
+                .cacheControl(CacheControl.noStore())
                 .body(productService.getProductDetails(id));
     }
 }

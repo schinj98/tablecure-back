@@ -15,13 +15,13 @@ public class CloudflareCacheService {
 
     private final RestClient restClient = RestClient.create();
 
-    @Value("${cloudflare.zone-id}")
+    @Value("${cloudflare.zone-id:}")
     private String zoneId;
 
-    @Value("${cloudflare.api-token}")
+    @Value("${cloudflare.api-token:}")
     private String apiToken;
 
-    @Value("${app.api-base-url}")
+    @Value("${app.api-base-url:https://api.tablecure.com}")
     private String apiBaseUrl;
 
     /**
@@ -39,6 +39,10 @@ public class CloudflareCacheService {
     }
 
     private void purge(List<String> urls) {
+        if (zoneId.isBlank() || apiToken.isBlank()) {
+            log.debug("Cloudflare env vars not set — skipping cache purge");
+            return;
+        }
         try {
             restClient.post()
                     .uri("https://api.cloudflare.com/client/v4/zones/" + zoneId + "/purge_cache")
