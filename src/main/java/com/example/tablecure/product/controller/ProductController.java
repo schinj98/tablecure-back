@@ -20,13 +20,18 @@ public class ProductController {
 
     // ✅ GET all products
     @GetMapping
-    public List<ProductResponse> getProducts() {
-        return productService.getAllProducts();
+    public ResponseEntity<List<ProductResponse>> getProducts() {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(productService.getAllProducts());
     }
+
     // ✅ GET product by id
     @GetMapping("/{id}")
-    public ProductResponse getProductById(@PathVariable Long id) {
-        return productService.getProductById(id);
+    public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(productService.getProductById(id));
     }
 
     @GetMapping("/{id}/details")
