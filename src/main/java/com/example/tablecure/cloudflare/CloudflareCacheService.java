@@ -40,20 +40,24 @@ public class CloudflareCacheService {
 
     private void purge(List<String> urls) {
         if (zoneId.isBlank() || apiToken.isBlank()) {
-            log.debug("Cloudflare env vars not set — skipping cache purge");
+            log.warn("Cloudflare env vars not set (CLOUDFLARE_ZONE_ID / CLOUDFLARE_API_TOKEN) — cache purge skipped for: {}", urls);
             return;
         }
         try {
-            restClient.post()
+            var response = restClient.post()
                     .uri("https://api.cloudflare.com/client/v4/zones/" + zoneId + "/purge_cache")
                     .header("Authorization", "Bearer " + apiToken)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(Map.of("files", urls))
                     .retrieve()
-                    .toBodilessEntity();
-            log.info("Cloudflare cache purged: {}", urls);
+                    .toEntity(String.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Cloudflare cache purged successfully: {}", urls);
+            } else {
+                log.error("Cloudflare cache purge returned {}: {}", response.getStatusCode(), response.getBody());
+            }
         } catch (Exception e) {
-            log.warn("Cloudflare cache purge failed (non-critical): {}", e.getMessage());
+            log.error("Cloudflare cache purge failed for {}: {}", urls, e.getMessage());
         }
     }
 }
