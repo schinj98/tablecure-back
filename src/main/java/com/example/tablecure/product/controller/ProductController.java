@@ -23,6 +23,7 @@ public class ProductController {
     public ResponseEntity<List<ProductResponse>> getProducts() {
         return ResponseEntity.ok()
                 .header("Cloudflare-CDN-Cache-Control", "public, max-age=600")
+                .header("Surrogate-Control", "no-store")
                 .cacheControl(CacheControl.noStore())
                 .body(productService.getAllProducts());
     }
@@ -32,6 +33,7 @@ public class ProductController {
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok()
                 .header("Cloudflare-CDN-Cache-Control", "public, max-age=600")
+                .header("Surrogate-Control", "no-store")
                 .cacheControl(CacheControl.noStore())
                 .body(productService.getProductById(id));
     }
@@ -40,6 +42,7 @@ public class ProductController {
     public ResponseEntity<ProductDetailResponse> getDetails(@PathVariable Long id) {
         return ResponseEntity.ok()
                 .header("Cloudflare-CDN-Cache-Control", "public, max-age=600")
+                .header("Surrogate-Control", "no-store")
                 .cacheControl(CacheControl.noStore())
                 .body(productService.getProductDetails(id));
     }
