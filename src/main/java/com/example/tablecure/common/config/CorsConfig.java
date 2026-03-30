@@ -19,6 +19,15 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
 
+                // Public product endpoints — no credentials needed, so wildcard origin is fine.
+                // This prevents Spring from adding Vary: Origin, which would cause Cloudflare
+                // to store separate cache entries per origin and break cache purge.
+                registry.addMapping("/api/products/**")
+                        .allowedOrigins("*")
+                        .allowedMethods("GET")
+                        .allowedHeaders("Content-Type", "Authorization");
+
+                // All other endpoints — specific origins with credentials
                 registry.addMapping("/**")
                         .allowedOrigins(
                                 "http://localhost:3000",
