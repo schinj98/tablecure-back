@@ -4,9 +4,12 @@ import com.example.tablecure.product.dto.ProductDetailResponse;
 import com.example.tablecure.product.dto.ProductResponse;
 import com.example.tablecure.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/products")
@@ -27,7 +30,9 @@ public class ProductController {
     }
 
     @GetMapping("/{id}/details")
-    public ProductDetailResponse getDetails(@PathVariable Long id) {
-        return productService.getProductDetails(id);
+    public ResponseEntity<ProductDetailResponse> getDetails(@PathVariable Long id) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).cachePublic())
+                .body(productService.getProductDetails(id));
     }
 }

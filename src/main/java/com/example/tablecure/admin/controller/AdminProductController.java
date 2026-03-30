@@ -8,6 +8,7 @@ import com.example.tablecure.product.dto.ProductDetailResponse;
 import com.example.tablecure.product.repository.ProductRepository;
 import lombok.*;
 import com.example.tablecure.product.service.ProductService;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -44,6 +45,7 @@ public class AdminProductController {
 
     // ── REPLACE ALL FEATURES (bulk) ─────────────────────────────
     // Body: { "features": ["Fast", "Lightweight"] }
+    @CacheEvict(value = "product-details", key = "#id")
     @PostMapping("/{id}/features")
     public Product replaceFeatures(@PathVariable Long id,
                                    @RequestBody FeaturesRequest req) {
@@ -66,6 +68,7 @@ public class AdminProductController {
 
     // ── REPLACE ALL SPECIFICATIONS (bulk) ──────────────────────
     // Body: { "specifications": { "Weight": "1kg", "Color": "Red" } }
+    @CacheEvict(value = "product-details", key = "#id")
     @PostMapping("/{id}/specifications")
     public Product replaceSpecifications(@PathVariable Long id,
                                          @RequestBody SpecsRequest req) {
@@ -88,6 +91,7 @@ public class AdminProductController {
 
     // ── REPLACE ALL IMAGES (bulk) ───────────────────────────────
     // Body: { "images": ["img1.jpg", "img2.jpg"] }
+    @CacheEvict(value = "product-details", key = "#id")
     @PostMapping("/{id}/images")
     public Product replaceImages(@PathVariable Long id,
                                  @RequestBody ImagesRequest req) {
@@ -117,6 +121,7 @@ public class AdminProductController {
                 .stock(req.getStock())
                 .sku(req.getSku())
                 .imageUrl(req.getImageUrl())
+                .videoUrl(req.getVideoUrl())
                 .build();
         p.setFeatures(new ArrayList<>());
         p.setSpecifications(new ArrayList<>());
@@ -125,6 +130,7 @@ public class AdminProductController {
     }
 
     // ── UPDATE FULL PRODUCT ─────────────────────────────────────
+    @CacheEvict(value = "product-details", key = "#id")
     @PutMapping("/{id}")
     public Product update(@PathVariable Long id,
                           @RequestBody ProductRequest req) {
@@ -137,11 +143,13 @@ public class AdminProductController {
         if (req.getStock()       != null) p.setStock(req.getStock());
         if (req.getSku()         != null) p.setSku(req.getSku());
         if (req.getImageUrl()    != null) p.setImageUrl(req.getImageUrl());
+        if (req.getVideoUrl()    != null) p.setVideoUrl(req.getVideoUrl());
 
         return productRepository.save(p);
     }
 
     // ── UPDATE PRICE ONLY ───────────────────────────────────────
+    @CacheEvict(value = "product-details", key = "#id")
     @PatchMapping("/{id}/price")
     public Product updatePrice(@PathVariable Long id,
                                @RequestParam BigDecimal price) {
@@ -152,6 +160,7 @@ public class AdminProductController {
     }
 
     // ── UPDATE SKU ONLY ─────────────────────────────────────────
+    @CacheEvict(value = "product-details", key = "#id")
     @PatchMapping("/{id}/sku")
     public Product updateSku(@PathVariable Long id,
                              @RequestParam String sku) {
@@ -162,6 +171,7 @@ public class AdminProductController {
     }
 
     // ── UPDATE STOCK ONLY ───────────────────────────────────────
+    @CacheEvict(value = "product-details", key = "#id")
     @PatchMapping("/{id}/stock")
     public Product updateStock(@PathVariable Long id,
                                @RequestParam Integer stock) {
@@ -172,6 +182,7 @@ public class AdminProductController {
     }
 
     // ── UPDATE IMAGE URL ────────────────────────────────────────
+    @CacheEvict(value = "product-details", key = "#id")
     @PatchMapping("/{id}/image")
     public Product updateImage(@PathVariable Long id,
                                @RequestParam String imageUrl) {
@@ -181,7 +192,19 @@ public class AdminProductController {
         return productRepository.save(p);
     }
 
+    // ── UPDATE VIDEO URL ────────────────────────────────────────
+    @CacheEvict(value = "product-details", key = "#id")
+    @PatchMapping("/{id}/video")
+    public Product updateVideo(@PathVariable Long id,
+                               @RequestParam String videoUrl) {
+        Product p = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        p.setVideoUrl(videoUrl);
+        return productRepository.save(p);
+    }
+
     // ── DELETE PRODUCT ──────────────────────────────────────────
+    @CacheEvict(value = "product-details", key = "#id")
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id) {
         productRepository.deleteById(id);
@@ -197,6 +220,7 @@ public class AdminProductController {
         private Integer stock;
         private String sku;
         private String imageUrl;
+        private String videoUrl;
     }
 
     @Getter @Setter @NoArgsConstructor

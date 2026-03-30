@@ -22,6 +22,7 @@ public class Product {
     private Integer stock;
     private String sku;
     private String imageUrl;
+    private String videoUrl;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     @JsonManagedReference("product-images")

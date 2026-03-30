@@ -19,6 +19,7 @@ public class ProductDetailResponse {
     private String description;
     private BigDecimal price;
     private String imageUrl;
+    private String videoUrl;
 
     private List<String> features;
     private Map<String, String> specifications;

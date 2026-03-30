@@ -64,6 +64,7 @@ public class ProductService {
                 .description(p.getDescription())
                 .price(p.getPrice())
                 .imageUrl(p.getImageUrl())
+                .videoUrl(p.getVideoUrl())
                 .features(features)
                 .specifications(specs)
                 .images(images)

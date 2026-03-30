@@ -25,8 +25,12 @@ public class StorageService {
     @Value("${r2.public-url}")
     private String publicUrl;
 
-    private static final Set<String> ALLOWED_TYPES = Set.of(
+    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
             "image/jpeg", "image/png", "image/webp", "image/gif"
+    );
+
+    private static final Set<String> ALLOWED_VIDEO_TYPES = Set.of(
+            "video/mp4", "video/webm", "video/quicktime"
     );
 
     /**
@@ -35,13 +39,35 @@ public class StorageService {
      */
     public String upload(MultipartFile file, String folder) throws IOException {
         String contentType = file.getContentType();
-        if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
+        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType)) {
             throw new IllegalArgumentException(
                     "Invalid file type. Allowed: jpg, png, webp, gif");
         }
 
         String ext      = extractExtension(file.getOriginalFilename());
         String key      = folder + "/" + UUID.randomUUID() + ext;
+
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .contentType(contentType)
+                .build();
+
+        r2Client.putObject(request,
+                RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+        return publicUrl + "/" + key;
+    }
+
+    public String uploadVideo(MultipartFile file, String folder) throws IOException {
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_VIDEO_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException(
+                    "Invalid file type. Allowed: mp4, webm, mov");
+        }
+
+        String ext  = extractExtension(file.getOriginalFilename());
+        String key  = folder + "/" + UUID.randomUUID() + ext;
 
         PutObjectRequest request = PutObjectRequest.builder()
                 .bucket(bucket)
