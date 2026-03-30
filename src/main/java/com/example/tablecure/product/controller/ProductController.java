@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/api/products")
@@ -22,8 +21,6 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<ProductResponse>> getProducts() {
         return ResponseEntity.ok()
-                .header("Cloudflare-CDN-Cache-Control", "public, max-age=600")
-                .header("Surrogate-Control", "no-store")
                 .cacheControl(CacheControl.noStore())
                 .body(productService.getAllProducts());
     }
@@ -32,8 +29,6 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
         return ResponseEntity.ok()
-                .header("Cloudflare-CDN-Cache-Control", "public, max-age=600")
-                .header("Surrogate-Control", "no-store")
                 .cacheControl(CacheControl.noStore())
                 .body(productService.getProductById(id));
     }
@@ -41,8 +36,6 @@ public class ProductController {
     @GetMapping("/{id}/details")
     public ResponseEntity<ProductDetailResponse> getDetails(@PathVariable Long id) {
         return ResponseEntity.ok()
-                .header("Cloudflare-CDN-Cache-Control", "public, max-age=600")
-                .header("Surrogate-Control", "no-store")
                 .cacheControl(CacheControl.noStore())
                 .body(productService.getProductDetails(id));
     }
