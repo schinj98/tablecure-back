@@ -8,6 +8,7 @@ import com.example.tablecure.product.dto.ProductDetailResponse;
 import com.example.tablecure.cloudflare.CloudflareCacheService;
 import com.example.tablecure.product.repository.ProductImageRepository;
 import com.example.tablecure.product.repository.ProductRepository;
+import com.example.tablecure.storage.StorageService;
 import lombok.*;
 import com.example.tablecure.product.service.ProductService;
 import org.springframework.cache.annotation.CacheEvict;
@@ -28,6 +29,7 @@ public class AdminProductController {
     private final ProductImageRepository productImageRepository;
     private final ProductService productService;
     private final CloudflareCacheService cloudflareCache;
+    private final StorageService storageService;
 
     // ── GET ALL PRODUCTS ────────────────────────────────────────
     @GetMapping
@@ -124,12 +126,24 @@ public class AdminProductController {
 
     // ── DELETE SPECIFIC IMAGES ─────────────────────────────────
     // Body: { "imageIds": [1, 2, 3] }
+    // Deletes the image files from R2 storage AND removes the DB records in one call.
     @CacheEvict(value = "product-details", key = "#id")
     @Transactional
     @DeleteMapping("/{id}/images")
     public Map<String, Object> deleteImages(@PathVariable Long id,
                                             @RequestBody ImageIdsRequest req) {
+        // Fetch URLs before deleting so we can clean up R2
+        List<String> urls = productImageRepository.findAllById(req.getImageIds())
+                .stream()
+                .filter(img -> id.equals(img.getProduct().getId()))
+                .map(img -> img.getUrl())
+                .toList();
+
         int deleted = productImageRepository.deleteByIdsAndProductId(req.getImageIds(), id);
+
+        // Delete files from R2 (safe no-op for external URLs)
+        urls.forEach(storageService::delete);
+
         cloudflareCache.purgeProduct(id);
         return Map.of("deleted", deleted);
     }
