@@ -36,6 +36,20 @@ public class AuthService {
         return userRepository.save(user);
     }
 
+    public void forgotPassword(String email) {
+        // Silently no-op for unknown emails — don't leak whether the account exists
+        userRepository.findByEmail(email)
+                .ifPresent(otpService::generateAndSendPasswordReset);
+    }
+
+    public void resetPassword(String email, String otp, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("INVALID_OTP"));
+        otpService.verifyOtp(email, otp);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     public User login(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));

@@ -269,6 +269,60 @@ public class EmailService {
         }
     }
 
+    @Async
+    public void sendPasswordResetEmail(String toEmail, String name, String otp) {
+        try {
+            String html = """
+                    <!DOCTYPE html>
+                    <html>
+                    <head><meta charset="UTF-8"></head>
+                    <body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,sans-serif;">
+                      <table width="100%%" cellpadding="0" cellspacing="0">
+                        <tr><td align="center" style="padding:40px 0;">
+                          <table width="600" cellpadding="0" cellspacing="0"
+                                 style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                            <tr>
+                              <td style="background:#1a1a2e;padding:32px 40px;text-align:center;">
+                                <h1 style="margin:0;color:#ffffff;font-size:28px;letter-spacing:1px;">Tablecure</h1>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding:40px;">
+                                <h2 style="margin:0 0 12px;color:#1a1a2e;font-size:22px;">Reset your password</h2>
+                                <p style="margin:0 0 24px;color:#555;font-size:15px;line-height:1.6;">
+                                  Hi %s, we received a request to reset your password.
+                                  Use the OTP below — it expires in <strong>10 minutes</strong>.
+                                </p>
+                                <div style="background:#fff4f0;border:2px dashed #e05a2b;border-radius:8px;
+                                            padding:24px;text-align:center;margin:0 0 32px;">
+                                  <p style="margin:0 0 8px;color:#555;font-size:13px;text-transform:uppercase;
+                                            letter-spacing:2px;">Your reset code</p>
+                                  <span style="font-size:42px;font-weight:bold;color:#1a1a2e;letter-spacing:8px;">%s</span>
+                                </div>
+                                <p style="margin:0;color:#999;font-size:13px;text-align:center;">
+                                  If you didn't request a password reset, you can safely ignore this email.
+                                  Your password will not change.
+                                </p>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="background:#f8f8f8;padding:20px 40px;text-align:center;border-top:1px solid #eee;">
+                                <p style="margin:0;color:#aaa;font-size:12px;">&copy; 2025 Tablecure. All rights reserved.</p>
+                              </td>
+                            </tr>
+                          </table>
+                        </td></tr>
+                      </table>
+                    </body>
+                    </html>
+                    """.formatted(name, otp);
+
+            sendHtml(toEmail, name, "Reset your Tablecure password", html);
+        } catch (Exception e) {
+            log.error("Failed to send password reset email to {}: {}", toEmail, e.getMessage());
+        }
+    }
+
     private void sendHtml(String toEmail, String toName, String subject, String html) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("api-key", brevoApiKey);

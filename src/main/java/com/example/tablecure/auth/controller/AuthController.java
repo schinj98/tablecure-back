@@ -1,7 +1,9 @@
 package com.example.tablecure.auth.controller;
 
 import com.example.tablecure.auth.dto.AuthResponse;
+import com.example.tablecure.auth.dto.ForgotPasswordRequest;
 import com.example.tablecure.auth.dto.LoginRequest;
+import com.example.tablecure.auth.dto.ResetPasswordRequest;
 import com.example.tablecure.auth.repository.UserRepository;
 import com.example.tablecure.entity.User;
 import com.example.tablecure.auth.service.AuthService;
@@ -77,6 +79,30 @@ public class AuthController {
     @GetMapping("/me")
     public User getCurrentUser(Authentication auth) {
         return userRepository.findByEmail(auth.getName()).orElseThrow();
+    }
+
+    // FORGOT PASSWORD — sends OTP to email
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request.email());
+        // Always return success — don't reveal whether the email is registered
+        return ResponseEntity.ok(Map.of("message", "If an account with that email exists, a reset OTP has been sent."));
+    }
+
+    // RESET PASSWORD — verify OTP + set new password
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        try {
+            authService.resetPassword(request.email(), request.otp(), request.newPassword());
+            return ResponseEntity.ok(Map.of("message", "Password reset successful. Please log in with your new password."));
+        } catch (RuntimeException e) {
+            String msg = switch (e.getMessage()) {
+                case "INVALID_OTP" -> "Invalid or already used OTP.";
+                case "OTP_EXPIRED"  -> "OTP has expired. Please request a new one.";
+                default             -> e.getMessage();
+            };
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", msg));
+        }
     }
 
     // LOGIN

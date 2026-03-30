@@ -17,7 +17,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final int MAX_REQUESTS = 5;
     private static final long WINDOW_MS = 60_000L;
-    private static final List<String> RATE_LIMITED_PATHS = List.of("/api/auth/login", "/api/auth/register");
+    private static final List<String> RATE_LIMITED_PATHS = List.of("/api/auth/login", "/api/auth/register", "/api/auth/forgot-password");
 
     private final ConcurrentHashMap<String, List<Long>> requestTimestamps = new ConcurrentHashMap<>();
 

@@ -45,6 +45,24 @@ public class OtpService {
     }
 
     @Transactional
+    public void generateAndSendPasswordReset(User user) {
+        emailOtpRepository.deleteByEmail(user.getEmail());
+
+        String otp = String.format("%06d", RANDOM.nextInt(1_000_000));
+
+        EmailOtp emailOtp = EmailOtp.builder()
+                .email(user.getEmail())
+                .otp(otp)
+                .expiresAt(LocalDateTime.now().plusMinutes(10))
+                .used(false)
+                .build();
+
+        emailOtpRepository.save(emailOtp);
+
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), otp);
+    }
+
+    @Transactional
     public void verifyOtp(String email, String otp) {
         EmailOtp emailOtp = emailOtpRepository.findByEmailAndOtpAndUsedFalse(email, otp)
                 .orElseThrow(() -> new RuntimeException("INVALID_OTP"));
