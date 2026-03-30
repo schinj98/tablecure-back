@@ -6,10 +6,12 @@ import com.example.tablecure.entity.ProductImage;
 import com.example.tablecure.entity.ProductSpecification;
 import com.example.tablecure.product.dto.ProductDetailResponse;
 import com.example.tablecure.cloudflare.CloudflareCacheService;
+import com.example.tablecure.product.repository.ProductImageRepository;
 import com.example.tablecure.product.repository.ProductRepository;
 import lombok.*;
 import com.example.tablecure.product.service.ProductService;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -23,6 +25,7 @@ import java.util.Map;
 public class AdminProductController {
 
     private final ProductRepository productRepository;
+    private final ProductImageRepository productImageRepository;
     private final ProductService productService;
     private final CloudflareCacheService cloudflareCache;
 
@@ -117,6 +120,18 @@ public class AdminProductController {
         Product saved = productRepository.save(p);
         cloudflareCache.purgeProduct(id);
         return saved;
+    }
+
+    // ── DELETE SPECIFIC IMAGES ─────────────────────────────────
+    // Body: { "imageIds": [1, 2, 3] }
+    @CacheEvict(value = "product-details", key = "#id")
+    @Transactional
+    @DeleteMapping("/{id}/images")
+    public Map<String, Object> deleteImages(@PathVariable Long id,
+                                            @RequestBody ImageIdsRequest req) {
+        int deleted = productImageRepository.deleteByIdsAndProductId(req.getImageIds(), id);
+        cloudflareCache.purgeProduct(id);
+        return Map.of("deleted", deleted);
     }
 
     // ── CREATE PRODUCT ──────────────────────────────────────────
@@ -259,5 +274,10 @@ public class AdminProductController {
     @Getter @Setter @NoArgsConstructor
     public static class ImagesRequest {
         private List<String> images;
+    }
+
+    @Getter @Setter @NoArgsConstructor
+    public static class ImageIdsRequest {
+        private List<Long> imageIds;
     }
 }
