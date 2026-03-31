@@ -75,6 +75,7 @@ public class AdminOrderController {
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         order.setStatus(status);
         Order saved = orderRepository.save(order);
+        initForEmail(saved);
         emailService.sendOrderStatusEmail(saved, status);
         return toSummary(saved);
     }
@@ -91,10 +92,11 @@ public class AdminOrderController {
         } else if (order.getStatus() == OrderStatus.SHIPPED) {
             order.setStatus(OrderStatus.DELIVERED);
         } else {
-            throw new RuntimeException(
+            throw new IllegalStateException(
                     "Cannot process order in status: " + order.getStatus());
         }
         Order saved = orderRepository.save(order);
+        initForEmail(saved);
         emailService.sendOrderStatusEmail(saved, saved.getStatus());
         return toSummary(saved);
     }
@@ -105,10 +107,11 @@ public class AdminOrderController {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         if (order.getStatus() == OrderStatus.DELIVERED) {
-            throw new RuntimeException("Cannot cancel a delivered order");
+            throw new IllegalStateException("Cannot cancel a delivered order");
         }
         order.setStatus(OrderStatus.CANCELLED);
         Order saved = orderRepository.save(order);
+        initForEmail(saved);
         emailService.sendOrderStatusEmail(saved, OrderStatus.CANCELLED);
         return toSummary(saved);
     }
@@ -120,7 +123,7 @@ public class AdminOrderController {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         if (!"COD".equals(order.getPaymentStatus())) {
-            throw new RuntimeException("Order is not a COD order");
+            throw new IllegalStateException("Order is not a COD order");
         }
         order.setPaymentStatus("PAID");
         return toSummary(orderRepository.save(order));
@@ -133,9 +136,9 @@ public class AdminOrderController {
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         if (!"PAID".equals(order.getPaymentStatus()))
-            throw new RuntimeException("Order is not PAID — cannot refund");
+            throw new IllegalStateException("Order is not PAID — cannot refund");
         if (order.getRazorpayPaymentId() == null)
-            throw new RuntimeException("No Razorpay payment ID on this order");
+            throw new IllegalStateException("No Razorpay payment ID on this order");
 
         RazorpayClient client = new RazorpayClient(razorpayKey, razorpaySecret);
         JSONObject req = new JSONObject();
@@ -151,6 +154,7 @@ public class AdminOrderController {
         order.setPaymentStatus("REFUNDED");
         order.setStatus(OrderStatus.CANCELLED);
         Order saved = orderRepository.save(order);
+        initForEmail(saved);
         emailService.sendOrderStatusEmail(saved, OrderStatus.REFUNDED);
         return toSummary(saved);
     }
@@ -179,6 +183,22 @@ public class AdminOrderController {
         order.setRazorpayRefundId(refund.get("id"));
         order.setPaymentStatus("PARTIALLY_REFUNDED");
         return toSummary(orderRepository.save(order));
+    }
+
+    // ── HELPER: Initialize lazy associations in the request thread ──
+    // The JPA session is open here (open-in-view). Touching the proxies
+    // forces Hibernate to load them, so the @Async email thread can read
+    // the already-populated objects after the session closes.
+    private void initForEmail(Order order) {
+        if (order.getUser() != null) {
+            order.getUser().getEmail();
+            order.getUser().getName();
+        }
+        if (order.getOrderItems() != null) {
+            order.getOrderItems().forEach(item -> {
+                if (item.getProduct() != null) item.getProduct().getName();
+            });
+        }
     }
 
     // ── HELPER: Order entity → flat DTO ─────────────────────────

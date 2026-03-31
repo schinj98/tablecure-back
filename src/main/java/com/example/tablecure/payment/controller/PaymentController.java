@@ -7,6 +7,7 @@ import com.example.tablecure.payment.dto.CreateOrderRequest;
 import com.example.tablecure.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import com.example.tablecure.order.service.OrderService;
 
@@ -20,6 +21,9 @@ public class PaymentController {
     private final PaymentService paymentService;
     private final OrderService orderService;
     private final OrderRepository orderRepository;
+
+    @Value("${razorpay.key}")
+    private String razorpayPublicKey;
 
     @PostMapping("/create-order")
     public String createOrder(@RequestBody CreateOrderRequest request,
@@ -44,7 +48,9 @@ public class PaymentController {
         order.setPaymentStatus("CREATED");
         orderService.save(order);
 
-        return razorpayOrder;
+        // Inject the public key so the frontend never needs it hardcoded
+        json.put("key", razorpayPublicKey);
+        return json.toString();
     }
 
     @PostMapping("/cod")
