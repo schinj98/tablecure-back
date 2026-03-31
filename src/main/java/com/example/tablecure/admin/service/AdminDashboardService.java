@@ -25,7 +25,8 @@ public class AdminDashboardService {
 
         long paidOrders = orderRepository.countByPaymentStatus("PAID");
 
-        double totalRevenue = orderRepository.sumPaidRevenue();
+        Double rawRevenue = orderRepository.sumPaidRevenue();
+        double totalRevenue = rawRevenue != null ? rawRevenue : 0.0;
 
         long totalUsers    = userRepository.count();
         long totalProducts = productRepository.count();

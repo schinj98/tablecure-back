@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /api/admin/
+Disallow: /api/payment/
+Disallow: /api/orders/
+Disallow: /api/user/
+Disallow: /api/address/
+Disallow: /api/dashboard/
+
+Sitemap: https://api.tablecure.com/sitemap.xml

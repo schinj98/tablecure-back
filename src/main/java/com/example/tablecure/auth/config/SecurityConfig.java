@@ -23,6 +23,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/products/**").permitAll()
                         .requestMatchers("/api/sale/active").permitAll()
+                        .requestMatchers("/sitemap.xml").permitAll()
+                        .requestMatchers("/robots.txt").permitAll()
                         .requestMatchers("/tablecure-logo.png").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/coupons/**").authenticated()
