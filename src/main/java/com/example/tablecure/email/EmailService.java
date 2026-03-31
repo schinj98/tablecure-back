@@ -29,6 +29,9 @@ public class EmailService {
     @Value("${mail.from}")
     private String fromEmail;
 
+    @Value("${app.logo-url}")
+    private String logoUrl;
+
     private static final String BREVO_URL = "https://api.brevo.com/v3/smtp/email";
 
     @Async
@@ -48,7 +51,8 @@ public class EmailService {
                                  style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                             <tr>
                               <td style="background:#1a1a2e;padding:32px 40px;text-align:center;">
-                                <h1 style="margin:0;color:#ffffff;font-size:28px;letter-spacing:1px;">Tablecure</h1>
+                                <img src="%s" alt="Tablecure"
+                                     style="height:52px;max-width:220px;object-fit:contain;display:block;margin:0 auto;" />
                               </td>
                             </tr>
                             <tr>
@@ -87,7 +91,7 @@ public class EmailService {
                       </table>
                     </body>
                     </html>
-                    """.formatted(name, otp, verifyLink);
+                    """.formatted(logoUrl, name, otp, verifyLink);
 
             sendHtml(toEmail, name, "Verify your Tablecure account", html);
         } catch (Exception e) {
@@ -157,7 +161,8 @@ public class EmailService {
                                  style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                             <tr>
                               <td style="background:#1a1a2e;padding:32px 40px;text-align:center;">
-                                <h1 style="margin:0 0 4px;color:#ffffff;font-size:28px;letter-spacing:1px;">Tablecure</h1>
+                                <img src="%s" alt="Tablecure"
+                                     style="height:52px;max-width:220px;object-fit:contain;display:block;margin:0 auto 8px;" />
                                 <p style="margin:0;color:#a0a8c8;font-size:14px;">Order Confirmation</p>
                               </td>
                             </tr>
@@ -214,7 +219,7 @@ public class EmailService {
                       </table>
                     </body>
                     </html>
-                    """.formatted(name, order.getId(), orderDate,
+                    """.formatted(logoUrl, name, order.getId(), orderDate,
                     itemRows.toString(), subtotal, discountRow, order.getFinalAmount(), addressBlock);
 
             sendHtml(toEmail, name, "Order Confirmed – #" + order.getId(), html);
@@ -238,7 +243,8 @@ public class EmailService {
                                  style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                             <tr>
                               <td style="background:#1a1a2e;padding:32px 40px;text-align:center;">
-                                <h1 style="margin:0;color:#ffffff;font-size:28px;letter-spacing:1px;">Tablecure</h1>
+                                <img src="%s" alt="Tablecure"
+                                     style="height:52px;max-width:220px;object-fit:contain;display:block;margin:0 auto;" />
                               </td>
                             </tr>
                             <tr>
@@ -261,7 +267,7 @@ public class EmailService {
                       </table>
                     </body>
                     </html>
-                    """.formatted(name, htmlMessage);
+                    """.formatted(logoUrl, name, htmlMessage);
 
             sendHtml(toEmail, name, subject, html);
         } catch (Exception e) {
@@ -283,7 +289,8 @@ public class EmailService {
                                  style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                             <tr>
                               <td style="background:#1a1a2e;padding:32px 40px;text-align:center;">
-                                <h1 style="margin:0;color:#ffffff;font-size:28px;letter-spacing:1px;">Tablecure</h1>
+                                <img src="%s" alt="Tablecure"
+                                     style="height:52px;max-width:220px;object-fit:contain;display:block;margin:0 auto;" />
                               </td>
                             </tr>
                             <tr>
@@ -315,7 +322,7 @@ public class EmailService {
                       </table>
                     </body>
                     </html>
-                    """.formatted(name, otp);
+                    """.formatted(logoUrl, name, otp);
 
             sendHtml(toEmail, name, "Reset your Tablecure password", html);
         } catch (Exception e) {
