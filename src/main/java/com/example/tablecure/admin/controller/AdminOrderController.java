@@ -1,5 +1,6 @@
 package com.example.tablecure.admin.controller;
 
+import com.example.tablecure.email.EmailService;
 import com.example.tablecure.entity.Order;
 import com.example.tablecure.entity.User;
 import com.example.tablecure.order.OrderStatus;
@@ -25,6 +26,7 @@ public class AdminOrderController {
 
     private final OrderRepository orderRepository;
     private final UserRepository  userRepository;
+    private final EmailService    emailService;
 
     @Value("${razorpay.key}")
     private String razorpayKey;
@@ -72,7 +74,9 @@ public class AdminOrderController {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         order.setStatus(status);
-        return toSummary(orderRepository.save(order));
+        Order saved = orderRepository.save(order);
+        emailService.sendOrderStatusEmail(saved, status);
+        return toSummary(saved);
     }
 
     // ── PROCESS ORDER (advance pipeline) ────────────────────────
@@ -90,7 +94,9 @@ public class AdminOrderController {
             throw new RuntimeException(
                     "Cannot process order in status: " + order.getStatus());
         }
-        return toSummary(orderRepository.save(order));
+        Order saved = orderRepository.save(order);
+        emailService.sendOrderStatusEmail(saved, saved.getStatus());
+        return toSummary(saved);
     }
 
     // ── CANCEL ORDER ────────────────────────────────────────────
@@ -102,7 +108,9 @@ public class AdminOrderController {
             throw new RuntimeException("Cannot cancel a delivered order");
         }
         order.setStatus(OrderStatus.CANCELLED);
-        return toSummary(orderRepository.save(order));
+        Order saved = orderRepository.save(order);
+        emailService.sendOrderStatusEmail(saved, OrderStatus.CANCELLED);
+        return toSummary(saved);
     }
 
     // ── FULL REFUND via Razorpay ─────────────────────────────────
@@ -129,7 +137,9 @@ public class AdminOrderController {
         order.setRazorpayRefundId(refund.get("id"));
         order.setPaymentStatus("REFUNDED");
         order.setStatus(OrderStatus.CANCELLED);
-        return toSummary(orderRepository.save(order));
+        Order saved = orderRepository.save(order);
+        emailService.sendOrderStatusEmail(saved, OrderStatus.REFUNDED);
+        return toSummary(saved);
     }
 
     // ── PARTIAL REFUND via Razorpay ──────────────────────────────
