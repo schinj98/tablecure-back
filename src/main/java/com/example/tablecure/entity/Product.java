@@ -20,6 +20,7 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
     private BigDecimal price;
+    private BigDecimal mrp;   // original/list price shown crossed out; null = no strikethrough
     private Integer stock;
     private String sku;
     private String imageUrl;

@@ -8,12 +8,16 @@ import com.example.tablecure.order.repository.OrderRepository;
 import com.example.tablecure.product.repository.ProductRepository;
 import com.example.tablecure.auth.repository.UserRepository;
 import com.example.tablecure.address.repository.AddressRepository;
+import com.example.tablecure.sale.service.GlobalSaleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class OrderService {
     private final AddressRepository addressRepository;
     private final CouponService couponService;
     private final EmailService emailService;
+    private final GlobalSaleService globalSaleService;
 
     @Transactional
     public Order createOrder(String email, List<OrderItem> items, String couponCode) {
@@ -42,12 +47,21 @@ public class OrderService {
         order.setPaymentStatus("CREATED");
         order.setAddress(address);
 
+        Optional<GlobalSale> activeSale = globalSaleService.getActiveSale();
+
         for (OrderItem item : items) {
             Product product = productRepository.findById(item.getProduct().getId())
                     .orElseThrow(() -> new RuntimeException("Product not found"));
             item.setProduct(product);
             item.setOrder(order);
-            item.setPrice(product.getPrice());
+
+            // Apply sale discount at item level; coupon stacks on top of subtotal
+            BigDecimal effectivePrice = activeSale
+                    .map(sale -> product.getPrice().multiply(
+                            BigDecimal.valueOf(1.0 - sale.getDiscountPercent() / 100.0))
+                            .setScale(2, RoundingMode.HALF_UP))
+                    .orElse(product.getPrice());
+            item.setPrice(effectivePrice);
         }
 
         order.setOrderItems(items);

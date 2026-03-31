@@ -18,6 +18,9 @@ public class ProductDetailResponse {
     private String name;
     private String description;
     private BigDecimal price;
+    private BigDecimal mrp;         // crossed-out price; null = no strikethrough
+    private BigDecimal salePrice;   // discounted price during active sale; null = no sale
+    private Integer salePercent;    // e.g. 20 for "20% OFF" badge; null = no sale
     private String imageUrl;
     private String videoUrl;
 

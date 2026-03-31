@@ -157,6 +157,7 @@ public class AdminProductController {
                 .name(req.getName())
                 .description(req.getDescription())
                 .price(req.getPrice())
+                .mrp(req.getMrp())
                 .stock(req.getStock())
                 .sku(req.getSku())
                 .imageUrl(req.getImageUrl())
@@ -181,6 +182,7 @@ public class AdminProductController {
         if (req.getName()        != null) p.setName(req.getName());
         if (req.getDescription() != null) p.setDescription(req.getDescription());
         if (req.getPrice()       != null) p.setPrice(req.getPrice());
+        if (req.getMrp()         != null) p.setMrp(req.getMrp());
         if (req.getStock()       != null) p.setStock(req.getStock());
         if (req.getSku()         != null) p.setSku(req.getSku());
         if (req.getImageUrl()    != null) p.setImageUrl(req.getImageUrl());
@@ -202,6 +204,19 @@ public class AdminProductController {
         Product saved1 = productRepository.save(p);
         cloudflareCache.purgeProduct(id);
         return saved1;
+    }
+
+    // ── UPDATE MRP ONLY ─────────────────────────────────────────
+    @CacheEvict(value = "product-details", key = "#id")
+    @PatchMapping("/{id}/mrp")
+    public Product updateMrp(@PathVariable Long id,
+                             @RequestParam(required = false) BigDecimal mrp) {
+        Product p = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        p.setMrp(mrp); // null clears the strikethrough
+        Product saved = productRepository.save(p);
+        cloudflareCache.purgeProduct(id);
+        return saved;
     }
 
     // ── UPDATE SKU ONLY ─────────────────────────────────────────
@@ -273,6 +288,7 @@ public class AdminProductController {
         private String name;
         private String description;
         private BigDecimal price;
+        private BigDecimal mrp;     // original/list price for strikethrough; null = no strikethrough
         private Integer stock;
         private String sku;
         private String imageUrl;
