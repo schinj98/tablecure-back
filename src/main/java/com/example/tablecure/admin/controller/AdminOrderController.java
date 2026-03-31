@@ -113,6 +113,19 @@ public class AdminOrderController {
         return toSummary(saved);
     }
 
+    // ── COLLECT COD PAYMENT ─────────────────────────────────────
+    // Call this when the delivery agent collects cash from the customer
+    @PostMapping("/{id}/collect-cod")
+    public OrderSummary collectCod(@PathVariable Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        if (!"COD".equals(order.getPaymentStatus())) {
+            throw new RuntimeException("Order is not a COD order");
+        }
+        order.setPaymentStatus("PAID");
+        return toSummary(orderRepository.save(order));
+    }
+
     // ── FULL REFUND via Razorpay ─────────────────────────────────
     @PostMapping("/{id}/refund")
     public OrderSummary refundOrder(@PathVariable Long id) throws Exception {

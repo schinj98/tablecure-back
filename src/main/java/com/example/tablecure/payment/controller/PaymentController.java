@@ -47,6 +47,16 @@ public class PaymentController {
         return razorpayOrder;
     }
 
+    @PostMapping("/cod")
+    public Order placeCodOrder(@RequestBody CreateOrderRequest request,
+                               Principal principal) {
+        return orderService.placeCodOrder(
+                principal.getName(),
+                request.getItems(),
+                request.getCouponCode()
+        );
+    }
+
     @PostMapping("/verify")
     public String verify(@RequestParam String orderId,
                          @RequestParam String paymentId,

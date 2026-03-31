@@ -69,6 +69,26 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+    @Transactional
+    public Order placeCodOrder(String email, List<OrderItem> items, String couponCode) {
+        Order order = createOrder(email, items, couponCode);
+
+        order.setPaymentStatus("COD");
+        order.setStatus(OrderStatus.CONFIRMED);
+        orderRepository.save(order);
+
+        // Eagerly initialize lazy associations for the async email thread
+        order.getUser().getEmail();
+        order.getUser().getName();
+        if (order.getAddress() != null) {
+            order.getAddress().getStreet();
+        }
+        order.getOrderItems().forEach(item -> item.getProduct().getName());
+
+        emailService.sendOrderConfirmationEmail(order);
+        return order;
+    }
+
     public boolean hasUserPurchasedProduct(String email, Long productId) {
 
         User user = userRepository.findByEmail(email)
